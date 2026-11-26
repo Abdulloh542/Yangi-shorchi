@@ -1,6 +1,6 @@
 /* ==========================================================================
-   YANGI SHO'RCHI — GREEN & WHITE CONSULTATION LANDING PAGE (PC + MOBILE)
-   Brand Palette: Deep Emerald (#064B2B), Vivid Emerald (#0B7E45), Crisp White (#FFFFFF)
+   YANGI SHO'RCHI — HIGH-PERFORMANCE 60/120FPS CSS (PC + MOBILE)
+   Zero layout-shift, GPU-composited animations, WebP image-set
    ========================================================================== */
 
 :root {
@@ -49,7 +49,7 @@ body {
 }
 
 /* ==========================================================================
-   FIXED / PINNED TOP PILL HEADER (Stays pinned while scrolling on Mobile & PC)
+   FIXED / PINNED TOP PILL HEADER (GPU Layer Promoted — Zero Scroll Jitter)
    ========================================================================== */
 .sticky-header-bar {
   position: fixed;
@@ -59,6 +59,8 @@ body {
   z-index: 900;
   padding: 0 14px;
   pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 .top-pill {
@@ -70,8 +72,8 @@ body {
   justify-content: space-between;
   gap: 10px;
   background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(6, 75, 43, 0.14);
   border-radius: 999px;
   padding: 9px 18px;
@@ -134,7 +136,7 @@ body {
 
 .top-pill__cta:hover {
   filter: brightness(1.06);
-  transform: translateY(-1px);
+  transform: translate3d(0, -1px, 0);
 }
 
 /* ==========================================================================
@@ -147,7 +149,6 @@ body {
   background: var(--white);
 }
 
-/* Desktop full-bleed background hidden on mobile so mobile uses uncropped 16:9 band */
 .hero__masterplan-bg {
   display: none;
 }
@@ -183,7 +184,6 @@ body {
   color: #087a42;
 }
 
-/* Mobile Visual Stage matching user's exact 16:9 faded-edge composition */
 .hero__visual {
   position: relative;
   margin-top: 4px;
@@ -198,18 +198,26 @@ body {
   align-items: center;
 }
 
-/* Full 16:9 horizontal masterplan band — zero side cropping, 100% crisp center, soft top/bottom white fade */
-.hero__mobile-bg-img {
+.hero__mobile-bg-pic {
   position: absolute;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 108%;
   max-width: 620px;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
+.hero__mobile-bg-img {
+  width: 100%;
   height: auto;
   aspect-ratio: 16 / 9.6;
   object-fit: cover;
   object-position: center 46%;
+  display: block;
   -webkit-mask-image: linear-gradient(
     180deg,
     transparent 0%,
@@ -228,9 +236,6 @@ body {
     rgba(0, 0, 0, 0.55) 90%,
     transparent 100%
   );
-  z-index: 1;
-  pointer-events: none;
-  user-select: none;
 }
 
 .hero__speaker-wrap {
@@ -240,6 +245,12 @@ body {
   justify-content: center;
   align-items: flex-end;
   padding-top: 26px;
+}
+
+.hero__speaker-wrap picture {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .hero__speaker {
@@ -267,7 +278,7 @@ body {
   margin: 0 auto;
 }
 
-/* Big 3D Glossy Green Capsule Button */
+/* Big 3D Glossy Green Capsule Button (GPU Composited Shimmer) */
 .cta-btn {
   position: relative;
   width: 100%;
@@ -286,21 +297,23 @@ body {
     0 6px 0 #044222,
     0 16px 32px rgba(12, 130, 70, 0.38),
     inset 0 2px 2px rgba(255, 255, 255, 0.42);
-  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 14px 26px;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
+/* Pure GPU transform shimmer (zero layout/paint cost on mobile CPU) */
 .cta-btn::after {
   content: "";
   position: absolute;
   top: -50%;
-  left: -60%;
-  width: 42%;
+  left: 0;
+  width: 38%;
   height: 200%;
   background: linear-gradient(
     90deg,
@@ -308,24 +321,25 @@ body {
     rgba(255, 255, 255, 0.28) 50%,
     rgba(255, 255, 255, 0) 100%
   );
-  transform: rotate(24deg);
-  animation: ctaShimmer 3.6s infinite ease-in-out;
+  transform: translate3d(-180%, 0, 0) rotate(24deg);
+  will-change: transform;
+  animation: ctaShimmerGPU 3.6s infinite ease-in-out;
   pointer-events: none;
 }
 
-@keyframes ctaShimmer {
+@keyframes ctaShimmerGPU {
   0% {
-    left: -60%;
+    transform: translate3d(-180%, 0, 0) rotate(24deg);
   }
   42%,
   100% {
-    left: 135%;
+    transform: translate3d(380%, 0, 0) rotate(24deg);
   }
 }
 
 .cta-btn:hover {
   filter: brightness(1.04);
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
   box-shadow:
     0 8px 0 #044222,
     0 20px 36px rgba(12, 130, 70, 0.44),
@@ -333,14 +347,13 @@ body {
 }
 
 .cta-btn:active {
-  transform: translateY(3px);
+  transform: translate3d(0, 3px, 0);
   box-shadow:
     0 3px 0 #044222,
     0 10px 20px rgba(12, 130, 70, 0.3),
     inset 0 2px 2px rgba(255, 255, 255, 0.35);
 }
 
-/* Urgency Note + Curved Arrow */
 .urgency-row {
   position: relative;
   display: flex;
@@ -377,11 +390,13 @@ body {
 }
 
 /* ==========================================================================
-   FEATURES SECTION ("LOYIHA QULAYLIKLARI")
+   FEATURES SECTION ("LOYIHA QULAYLIKLARI" — Offscreen Render Deferred)
    ========================================================================== */
 .features {
   padding: 28px 16px 46px;
   background: var(--white);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 620px;
 }
 
 .features__inner {
@@ -416,11 +431,11 @@ body {
   border-radius: 20px;
   padding: 10px 16px 10px 10px;
   box-shadow: var(--shadow-card);
-  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-3px);
+  transform: translate3d(0, -3px, 0);
   border-color: #8cc9a8;
   box-shadow: 0 14px 30px rgba(6, 75, 43, 0.1);
 }
@@ -437,6 +452,7 @@ body {
   justify-content: center;
 }
 
+.feature-card__thumb picture,
 .feature-card__thumb img {
   width: 100%;
   height: 100%;
@@ -462,7 +478,6 @@ body {
   font-weight: 800;
 }
 
-/* Footer Branding */
 .site-footer {
   padding: 22px 16px 32px;
   border-top: 1px solid #e6f0ea;
@@ -483,7 +498,7 @@ body {
 }
 
 /* ==========================================================================
-   DESKTOP / PC LAYOUT (>= 920px) — WIDE MASTERPLAN (IMAGE 5) & 2-COLUMN HERO
+   DESKTOP / PC LAYOUT (>= 920px) — WEBP IMAGE-SET & 2-COLUMN HERO
    ========================================================================== */
 @media (min-width: 920px) {
   .sticky-header-bar {
@@ -516,13 +531,20 @@ body {
     align-items: stretch;
   }
 
-  /* PC Wide Masterplan Background (Image 5) */
   .hero__masterplan-bg {
     display: block;
     position: absolute;
     inset: 0;
     z-index: 1;
     background-image: url('../assets/hero-pc.jpg');
+    background-image: -webkit-image-set(
+      url('../assets/hero-pc.webp') 1x,
+      url('../assets/hero-pc.jpg') 1x
+    );
+    background-image: image-set(
+      url('../assets/hero-pc.webp') type('image/webp'),
+      url('../assets/hero-pc.jpg') type('image/jpeg')
+    );
     background-size: cover;
     background-position: 65% center;
   }
@@ -548,7 +570,7 @@ body {
       );
   }
 
-  .hero__mobile-bg-img {
+  .hero__mobile-bg-pic {
     display: none;
   }
 
@@ -651,12 +673,15 @@ body {
     align-items: flex-end;
   }
 
+  .hero__speaker-wrap picture {
+    width: auto;
+  }
+
   .hero__speaker {
     width: clamp(340px, 30vw, 430px);
     filter: drop-shadow(0 18px 38px rgba(5, 32, 18, 0.38));
   }
 
-  /* Desktop Features Grid: 3 + 2 centered symmetrical cards */
   .features {
     padding: 64px 32px 76px;
     background: linear-gradient(180deg, #ffffff 0%, #f5faf7 100%);
@@ -703,7 +728,7 @@ body {
 }
 
 /* ==========================================================================
-   MODAL ("Ro'yxatdan o'tish" — Matches Reference Image 5)
+   MODAL ("Ro'yxatdan o'tish")
    ========================================================================== */
 .modal-backdrop {
   position: fixed;
@@ -718,7 +743,7 @@ body {
   padding: 18px;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.22s ease, visibility 0.22s ease;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .modal-backdrop.is-open {
@@ -734,12 +759,13 @@ body {
   border-radius: 18px;
   padding: 28px 24px 26px;
   box-shadow: 0 24px 60px rgba(4, 38, 20, 0.28);
-  transform: translateY(16px) scale(0.97);
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translate3d(0, 14px, 0) scale(0.97);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .modal-backdrop.is-open .modal-card {
-  transform: translateY(0) scale(1);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 .modal-close {
@@ -903,6 +929,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  touch-action: manipulation;
 }
 
 .submit-btn:hover {
@@ -919,7 +946,7 @@ body {
 }
 
 /* ==========================================================================
-   THANK YOU PAGE ("OXIRGI QADAM QOLDI!" — Matches Reference Image 6 in Green/White)
+   THANK YOU PAGE ("OXIRGI QADAM QOLDI!")
    ========================================================================== */
 .thankyou-body {
   background: #f2f7f4;
@@ -976,16 +1003,17 @@ body {
   display: flex;
   justify-content: center;
   margin-bottom: 24px;
-  animation: arrowBounce 1.6s infinite ease-in-out;
+  will-change: transform;
+  animation: arrowBounceGPU 1.6s infinite ease-in-out;
 }
 
-@keyframes arrowBounce {
+@keyframes arrowBounceGPU {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translateY(7px);
+    transform: translate3d(0, 7px, 0);
   }
 }
 
@@ -1010,16 +1038,17 @@ body {
     0 6px 0 #043e20,
     0 16px 32px rgba(11, 126, 68, 0.34),
     inset 0 2px 2px rgba(255, 255, 255, 0.38);
-  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  touch-action: manipulation;
 }
 
 .telegram-btn:hover {
   filter: brightness(1.05);
-  transform: translateY(-2px);
+  transform: translate3d(0, -2px, 0);
 }
 
 .telegram-btn:active {
-  transform: translateY(3px);
+  transform: translate3d(0, 3px, 0);
   box-shadow:
     0 3px 0 #043e20,
     0 10px 20px rgba(11, 126, 68, 0.28);
@@ -1029,6 +1058,13 @@ body {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-btn::after,
+  .down-arrow-wrap {
+    animation: none;
+  }
 }
 
 @media (max-width: 375px) {

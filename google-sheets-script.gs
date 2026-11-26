@@ -1,10 +1,34 @@
 const SHEET_NAME = "Lidlar";
 
 function doPost(e) {
+  let params = {};
+  if (e && e.parameter && Object.keys(e.parameter).length > 0) {
+    params = e.parameter;
+  } else if (e && e.postData && e.postData.contents) {
+    try {
+      params = JSON.parse(e.postData.contents);
+    } catch (_) {}
+  }
+
+  // Fast RAM deduplication (prevents duplicate rows if slow mobile retries)
+  const cache = CacheService.getScriptCache();
+  const leadId = (params.lead_id || "").trim();
+  if (leadId && cache.get("lid_" + leadId)) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ ok: true, deduped: true }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
   const lock = LockService.getScriptLock();
-  lock.tryLock(10000);
+  lock.waitLock(28000);
 
   try {
+    if (leadId && cache.get("lid_" + leadId)) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ ok: true, deduped: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(SHEET_NAME);
 
@@ -12,7 +36,7 @@ function doPost(e) {
       sheet = ss.insertSheet(SHEET_NAME);
     }
 
-    if (sheet.getLastRow() === 0) {
+    if (!cache.get("headers_ready_v1") && sheet.getLastRow() === 0) {
       const headers = [
         "T/r",
         "Ism",
@@ -31,24 +55,15 @@ function doPost(e) {
       sheet.setColumnWidth(2, 180);
       sheet.setColumnWidth(3, 175);
       sheet.setColumnWidth(4, 165);
+      cache.put("headers_ready_v1", "1", 21600);
     }
 
-    let params = {};
-    if (e && e.parameter && Object.keys(e.parameter).length > 0) {
-      params = e.parameter;
-    } else if (e && e.postData && e.postData.contents) {
-      try {
-        params = JSON.parse(e.postData.contents);
-      } catch (_) {}
-    }
-
-    const rowNumber = sheet.getLastRow();
     const tashkentTime = Utilities.formatDate(new Date(), "Asia/Tashkent", "dd.MM.yyyy HH:mm:ss");
     const name = (params.name || "").trim();
     const phone = (params.phone || params.raw_phone || "").trim();
 
     sheet.appendRow([
-      rowNumber,
+      "=ROW()-1",
       name,
       "'" + phone,
       tashkentTime,
@@ -56,8 +71,12 @@ function doPost(e) {
       params.utm_source || "direct"
     ]);
 
+    if (leadId) {
+      cache.put("lid_" + leadId, "1", 21600);
+    }
+
     return ContentService
-      .createTextOutput(JSON.stringify({ ok: true, row: rowNumber }))
+      .createTextOutput(JSON.stringify({ ok: true }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
     return ContentService
@@ -70,6 +89,6 @@ function doPost(e) {
 
 function doGet() {
   return ContentService
-    .createTextOutput("Yangi Shorchi webhook OK")
+    .createTextOutput("Yangi Shorchi high-load webhook OK")
     .setMimeType(ContentService.MimeType.TEXT);
 }

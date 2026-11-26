@@ -7,25 +7,34 @@
   <meta name="description" content="Sho‘rchi tuman markazidan hech qanday foiz va penyalarsiz oyiga 2,925,000 so‘mdan xonadon xarid qilish imkoniyati! 5-dekabr soat 20:00 da onlayn taqdimot." />
   <link rel="icon" type="image/png" href="assets/favicon.png" />
 
-  <!-- Google Fonts: Oswald (impact headlines) & Plus Jakarta Sans (clean UI) -->
+  <!-- Preload critical LCP hero assets per device viewport so mobile never downloads desktop images -->
+  <link rel="preload" as="image" href="assets/speaker.webp" type="image/webp" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/hero-mobile-16x9.webp" type="image/webp" media="(max-width: 919px)" fetchpriority="high" />
+  <link rel="preload" as="image" href="assets/hero-pc.webp" type="image/webp" media="(min-width: 920px)" fetchpriority="high" />
+
+  <!-- Fast non-blocking Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=4" />
 </head>
 <body>
   <!-- ==================== FIXED / STICKY TOP PILL HEADER ==================== -->
   <div class="sticky-header-bar">
     <header class="top-pill">
       <a href="#" class="top-pill__brand" aria-label="Yangi Sho‘rchi bosh sahifa">
-        <img
-          src="assets/logo-green.png"
-          alt="Yangi Sho‘rchi logotipi"
-          class="top-pill__logo"
-          width="148"
-          height="42"
-        />
+        <picture>
+          <source srcset="assets/logo-green.webp" type="image/webp" />
+          <img
+            src="assets/logo-green.png"
+            alt="Yangi Sho‘rchi logotipi"
+            class="top-pill__logo"
+            width="148"
+            height="42"
+            decoding="async"
+          />
+        </picture>
       </a>
 
       <span class="top-pill__divider" aria-hidden="true"></span>
@@ -46,7 +55,7 @@
   <main class="page-shell">
     <!-- ==================== HERO SECTION (PC & MOBILE MASTERPLAN) ==================== -->
     <section class="hero">
-      <!-- Real Project Masterplan Background (PC: Image 5, Mobile: Image 6 via CSS) -->
+      <!-- PC Wide Masterplan Background -->
       <div class="hero__masterplan-bg" aria-hidden="true"></div>
 
       <div class="hero__container">
@@ -89,23 +98,32 @@
         <!-- Right / Bottom Visual Stage (16:9 Crisp Masterplan Band + Centered Speaker on Mobile) -->
         <div class="hero__visual">
           <div class="hero__scene">
-            <img
-              src="assets/hero-pc.jpg"
-              alt="Yangi Sho‘rchi 13 gektarli loyiha umumiy ko‘rinishi"
-              class="hero__mobile-bg-img"
-              width="1920"
-              height="1071"
-              fetchpriority="high"
-            />
-            <div class="hero__speaker-wrap">
+            <picture class="hero__mobile-bg-pic">
+              <source srcset="assets/hero-mobile-16x9.webp 960w, assets/hero-pc.webp 1920w" sizes="100vw" type="image/webp" />
               <img
-                src="assets/speaker.png"
-                alt="Yangi Sho‘rchi loyiha spikeri"
-                class="hero__speaker"
-                width="613"
-                height="900"
+                src="assets/hero-pc.jpg"
+                alt="Yangi Sho‘rchi 13 gektarli loyiha umumiy ko‘rinishi"
+                class="hero__mobile-bg-img"
+                width="960"
+                height="536"
                 fetchpriority="high"
+                decoding="async"
               />
+            </picture>
+
+            <div class="hero__speaker-wrap">
+              <picture>
+                <source srcset="assets/speaker.webp" type="image/webp" />
+                <img
+                  src="assets/speaker.png"
+                  alt="Yangi Sho‘rchi loyiha spikeri"
+                  class="hero__speaker"
+                  width="613"
+                  height="900"
+                  fetchpriority="high"
+                  decoding="async"
+                />
+              </picture>
             </div>
           </div>
 
@@ -143,17 +161,23 @@
           <!-- 1 -->
           <article class="feature-card">
             <div class="feature-card__thumb">
-              <img src="assets/card-park.jpg" alt="13 gektarli gigant loyiha va 9 gektar yashil hudud" loading="lazy" width="104" height="104" />
+              <picture>
+                <source srcset="assets/card-park.webp" type="image/webp" />
+                <img src="assets/card-park.jpg" alt="13 gektarli gigant loyiha va 9 gektar yashil hudud" loading="lazy" decoding="async" width="104" height="104" />
+              </picture>
             </div>
             <p class="feature-card__body">
               <strong>13 gektarli gigant loyiha</strong>, shundan <span class="green-tag">9 gektari yashil hudud</span>
             </p>
           </article>
 
-          <!-- 2 (Updated: 100 lab maishiy texnikalar) -->
+          <!-- 2 -->
           <article class="feature-card">
             <div class="feature-card__thumb">
-              <img src="assets/card-appliances.jpg" alt="100 lab maishiy texnikalar" loading="lazy" width="104" height="104" />
+              <picture>
+                <source srcset="assets/card-appliances.webp" type="image/webp" />
+                <img src="assets/card-appliances.jpg" alt="100 lab maishiy texnikalar" loading="lazy" decoding="async" width="104" height="104" />
+              </picture>
             </div>
             <p class="feature-card__body">
               Taqdimotda <span class="green-tag">100 lab maishiy texnikalar</span> yutib olish imkoniyati
@@ -163,7 +187,10 @@
           <!-- 3 -->
           <article class="feature-card">
             <div class="feature-card__thumb">
-              <img src="assets/card-home.jpg" alt="Bosh to'lovsiz oyiga 2,925,000 so'mdan xonadon" loading="lazy" width="104" height="104" />
+              <picture>
+                <source srcset="assets/card-home.webp" type="image/webp" />
+                <img src="assets/card-home.jpg" alt="Bosh to'lovsiz oyiga 2,925,000 so'mdan xonadon" loading="lazy" decoding="async" width="104" height="104" />
+              </picture>
             </div>
             <p class="feature-card__body">
               <strong>Bosh to‘lovsiz</strong> oyiga <span class="green-tag">2,925,000 so‘mdan</span> to‘lab <strong>xonadon xarid qilish</strong>
@@ -173,7 +200,10 @@
           <!-- 4 -->
           <article class="feature-card">
             <div class="feature-card__thumb">
-              <img src="assets/card-handshake.jpg" alt="60 oyga foiz va penyasiz bo'lib to'lash" loading="lazy" width="104" height="104" />
+              <picture>
+                <source srcset="assets/card-handshake.webp" type="image/webp" />
+                <img src="assets/card-handshake.jpg" alt="60 oyga foiz va penyasiz bo'lib to'lash" loading="lazy" decoding="async" width="104" height="104" />
+              </picture>
             </div>
             <p class="feature-card__body">
               60 oyga <strong>foiz va penyasiz</strong> bo‘lib to‘lash imkoniyati
@@ -183,7 +213,10 @@
           <!-- 5 -->
           <article class="feature-card">
             <div class="feature-card__thumb">
-              <img src="assets/card-building.jpg" alt="Mutlaqo bepulga xonadon yutib olish imkoniyati" loading="lazy" width="104" height="104" />
+              <picture>
+                <source srcset="assets/card-building.webp" type="image/webp" />
+                <img src="assets/card-building.jpg" alt="Mutlaqo bepulga xonadon yutib olish imkoniyati" loading="lazy" decoding="async" width="104" height="104" />
+              </picture>
             </div>
             <p class="feature-card__body">
               Mutlaqo bepulga <strong>xonadon yutib olish</strong> imkoniyati
@@ -214,12 +247,15 @@
     </section>
 
     <footer class="site-footer">
-      <img src="assets/logo-green.png" alt="Yangi Sho‘rchi" class="site-footer__logo" width="132" height="38" />
+      <picture>
+        <source srcset="assets/logo-green.webp" type="image/webp" />
+        <img src="assets/logo-green.png" alt="Yangi Sho‘rchi" class="site-footer__logo" width="132" height="38" loading="lazy" decoding="async" />
+      </picture>
       <p class="site-footer__copy">© Yangi Sho‘rchi — Barcha huquqlar himoyalangan</p>
     </footer>
   </main>
 
-  <!-- ==================== REGISTRATION MODAL (Ref Image 5) ==================== -->
+  <!-- ==================== REGISTRATION MODAL ==================== -->
   <div
     class="modal-backdrop"
     id="registerModal"
@@ -280,7 +316,7 @@
     </div>
   </div>
 
-  <script src="js/config.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/config.js?v=4"></script>
+  <script src="js/main.js?v=4" defer></script>
 </body>
 </html>

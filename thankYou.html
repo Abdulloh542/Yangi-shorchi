@@ -10,17 +10,21 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=4" />
 </head>
 <body class="thankyou-body">
   <main class="thankyou-card">
-    <img
-      src="assets/logo-green.png"
-      alt="Yangi Sho‘rchi"
-      class="thankyou-logo"
-      width="148"
-      height="42"
-    />
+    <picture>
+      <source srcset="assets/logo-green.webp" type="image/webp" />
+      <img
+        src="assets/logo-green.png"
+        alt="Yangi Sho‘rchi"
+        class="thankyou-logo"
+        width="148"
+        height="42"
+        decoding="async"
+      />
+    </picture>
 
     <h1 class="thankyou-title">OXIRGI QADAM QOLDI!</h1>
 
@@ -49,15 +53,7 @@
     </a>
   </main>
 
-  <script src="js/config.js"></script>
-  <script>
-    (function () {
-      var cfg = window.YANGI_SHORCHI_CONFIG || {};
-      var btn = document.getElementById("telegramChannelBtn");
-      if (btn && cfg.TELEGRAM_CHANNEL_URL) {
-        btn.href = cfg.TELEGRAM_CHANNEL_URL;
-      }
-    })();
-  </script>
+  <script src="js/config.js?v=4"></script>
+  <script src="js/main.js?v=4" defer></script>
 </body>
 </html>

@@ -2,6 +2,99 @@
   "use strict";
 
   const cfg = window.YANGI_SHORCHI_CONFIG || {};
+  const OUTBOX_KEY = "ys_outbox_queue_v1";
+  const LAST_SENT_KEY = "ys_last_sent_v1";
+
+  // 0. Sync Telegram Channel URL on thankYou.html + Background Outbox Retry Flusher
+  const tgBtn = document.getElementById("telegramChannelBtn");
+  if (tgBtn && cfg.TELEGRAM_CHANNEL_URL) {
+    tgBtn.href = cfg.TELEGRAM_CHANNEL_URL;
+  }
+
+  function readOutbox() {
+    try {
+      return JSON.parse(localStorage.getItem(OUTBOX_KEY) || "[]");
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function writeOutbox(items) {
+    try {
+      localStorage.setItem(OUTBOX_KEY, JSON.stringify(items.slice(-30)));
+    } catch (_) {}
+  }
+
+  function removeFromOutbox(leadId) {
+    const remaining = readOutbox().filter((item) => item.lead_id !== leadId);
+    writeOutbox(remaining);
+  }
+
+  function buildFormBody(payload) {
+    const params = new URLSearchParams();
+    Object.entries(payload).forEach(([k, v]) => params.append(k, String(v ?? "")));
+    return params.toString();
+  }
+
+  async function transmitPayload(payload) {
+    const endpoint = (cfg.GOOGLE_SHEETS_WEB_APP_URL || "").trim();
+    if (!endpoint) {
+      removeFromOutbox(payload.lead_id);
+      return true;
+    }
+
+    const encodedBody = buildFormBody(payload);
+
+    try {
+      await fetch(endpoint, {
+        method: "POST",
+        mode: "no-cors",
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+        },
+        body: encodedBody
+      });
+      removeFromOutbox(payload.lead_id);
+      return true;
+    } catch (_) {
+      // Fallback to navigator.sendBeacon if fetch failed under extreme network drop
+      try {
+        if (navigator.sendBeacon) {
+          const blob = new Blob([encodedBody], {
+            type: "application/x-www-form-urlencoded;charset=UTF-8"
+          });
+          if (navigator.sendBeacon(endpoint, blob)) {
+            removeFromOutbox(payload.lead_id);
+            return true;
+          }
+        }
+      } catch (__) {}
+      return false;
+    }
+  }
+
+  // Background queue flusher (recovers any failed/offline submission on thankYou.html or revisit)
+  async function flushOutboxWithJitter() {
+    const queue = readOutbox();
+    if (!queue.length) return;
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i];
+      // Jittered delay smooths out 5,000+ concurrent user spikes
+      const jitterMs = 350 + Math.floor(Math.random() * 1100);
+      await new Promise((r) => setTimeout(r, jitterMs));
+      await transmitPayload(item);
+    }
+  }
+
+  if (readOutbox().length > 0) {
+    setTimeout(flushOutboxWithJitter, 400);
+  }
+  window.addEventListener("online", flushOutboxWithJitter);
+
+  // =========================================================================
+  // MAIN LANDING PAGE CONTROLS
+  // =========================================================================
   const modal = document.getElementById("registerModal");
   const openBtns = document.querySelectorAll("[data-open-modal]");
   const closeBtn = document.getElementById("closeModalBtn");
@@ -20,25 +113,27 @@
     eventDateEl.textContent = cfg.EVENT_DATE_TEXT;
   }
 
-  // 1. Live Countdown Timer (MM:SS)
+  // 1. Lightweight Countdown Timer (pauses work when tab hidden to save mobile battery/CPU)
   if (countdownEls.length > 0) {
     let remaining = typeof cfg.COUNTDOWN_SECONDS === "number" ? cfg.COUNTDOWN_SECONDS : 117;
     const renderTimer = () => {
       const mins = String(Math.floor(remaining / 60)).padStart(2, "0");
       const secs = String(remaining % 60).padStart(2, "0");
       const txt = `${mins}:${secs}`;
-      countdownEls.forEach((el) => {
-        el.textContent = txt;
-      });
+      for (let i = 0; i < countdownEls.length; i++) {
+        countdownEls[i].textContent = txt;
+      }
     };
     renderTimer();
     setInterval(() => {
-      if (remaining > 0) {
+      if (!document.hidden && remaining > 0) {
         remaining -= 1;
         renderTimer();
       }
     }, 1000);
   }
+
+  if (!form) return;
 
   // 2. Modal Open / Close Controls
   function openModal() {
@@ -52,7 +147,7 @@
       } else if (phoneInput) {
         phoneInput.focus();
       }
-    }, 120);
+    }, 90);
   }
 
   function closeModal() {
@@ -63,7 +158,7 @@
     clearError();
   }
 
-  openBtns.forEach((btn) => btn.addEventListener("click", openModal));
+  openBtns.forEach((btn) => btn.addEventListener("click", openModal, { passive: true }));
   if (closeBtn) closeBtn.addEventListener("click", closeModal);
   if (modal) {
     modal.addEventListener("click", (e) => {
@@ -87,7 +182,7 @@
 
   function getRule() {
     const code = countrySelect ? countrySelect.value : "+998";
-    return COUNTRY_RULES[code] || { len: 9, placeholder: "88 888 88 88", format: [2, 3, 2, 2] };
+    return COUNTRY_RULES[code] || COUNTRY_RULES["+998"];
   }
 
   function formatDigits(digits, groups) {
@@ -142,92 +237,79 @@
     });
   }
 
-  // 4. Submit Name + Phone -> Google Sheets -> Redirect to thankYou.html
-  async function sendToGoogleSheets(payload) {
-    const endpoint = (cfg.GOOGLE_SHEETS_WEB_APP_URL || "").trim();
+  // 4. Instant Non-Blocking Lead Submission + Anti-Duplicate Guard
+  let isSubmitting = false;
 
-    // Backup locally
-    try {
-      const saved = JSON.parse(localStorage.getItem("yangi_shorchi_leads") || "[]");
-      saved.push(payload);
-      localStorage.setItem("yangi_shorchi_leads", JSON.stringify(saved.slice(-100)));
-    } catch (_) {}
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    clearError();
 
-    if (!endpoint) {
+    const fullName = (nameInput ? nameInput.value : "").trim();
+    if (fullName.length < 2) {
+      showError("Iltimos, ismingizni kiriting!", nameGroup);
+      if (nameInput) nameInput.focus();
       return;
     }
 
-    const bodyParams = new URLSearchParams();
-    Object.entries(payload).forEach(([k, v]) => bodyParams.append(k, String(v ?? "")));
+    const code = countrySelect ? countrySelect.value : "+998";
+    const rule = getRule();
+    const digits = (phoneInput ? phoneInput.value : "").replace(/\D/g, "");
 
-    const fetchPromise = fetch(endpoint, {
-      method: "POST",
-      mode: "no-cors",
-      keepalive: true,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-      },
-      body: bodyParams.toString()
-    }).catch((err) => {
-      console.warn("Google Sheets yuborishda ogohlantirish:", err);
-    });
+    if (digits.length < rule.len) {
+      showError("Iltimos, telefon raqamingizni to‘liq kiriting!", phoneGroup);
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
 
-    // Wait up to 2.5s for Google Sheets response; keepalive ensures completion even if slow
+    const rawPhone = `${code}${digits}`;
+
+    // Prevent accidental double-submission of identical phone within 25 seconds
+    try {
+      const last = JSON.parse(sessionStorage.getItem(LAST_SENT_KEY) || "null");
+      if (last && last.raw_phone === rawPhone && Date.now() - last.ts < 25000) {
+        window.location.href = "thankYou.html?from=root";
+        return;
+      }
+    } catch (_) {}
+
+    isSubmitting = true;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "YUBORILMOQDA...";
+    }
+
+    const formattedPhone = `${code} ${formatDigits(digits, rule.format)}`;
+    const urlParams = new URLSearchParams(window.location.search);
+    const leadId = `ys_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    const payload = {
+      lead_id: leadId,
+      name: fullName,
+      phone: formattedPhone,
+      raw_phone: rawPhone,
+      timestamp: new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" }),
+      project: "Yangi Shorchi",
+      utm_source: urlParams.get("utm_source") || "direct",
+      utm_medium: urlParams.get("utm_medium") || "",
+      utm_campaign: urlParams.get("utm_campaign") || ""
+    };
+
+    // Enqueue before sending so zero leads are lost even if network drops mid-redirect
+    const queue = readOutbox();
+    queue.push(payload);
+    writeOutbox(queue);
+
+    try {
+      sessionStorage.setItem(LAST_SENT_KEY, JSON.stringify({ raw_phone: rawPhone, ts: Date.now() }));
+    } catch (_) {}
+
+    // Race transmission against snappy 900ms UI budget so button NEVER hangs under 5,000+ user load
     await Promise.race([
-      fetchPromise,
-      new Promise((resolve) => setTimeout(resolve, 2500))
+      transmitPayload(payload),
+      new Promise((resolve) => setTimeout(resolve, 900))
     ]);
-  }
 
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      clearError();
-
-      const fullName = (nameInput ? nameInput.value : "").trim();
-      if (fullName.length < 2) {
-        showError("Iltimos, ismingizni kiriting!", nameGroup);
-        if (nameInput) nameInput.focus();
-        return;
-      }
-
-      const code = countrySelect ? countrySelect.value : "+998";
-      const rule = getRule();
-      const digits = (phoneInput ? phoneInput.value : "").replace(/\D/g, "");
-
-      if (digits.length < rule.len) {
-        showError("Iltimos, telefon raqamingizni to‘liq kiriting!", phoneGroup);
-        if (phoneInput) phoneInput.focus();
-        return;
-      }
-
-      const formattedPhone = `${code} ${formatDigits(digits, rule.format)}`;
-      const urlParams = new URLSearchParams(window.location.search);
-      const utmSource = urlParams.get("utm_source") || "direct";
-      const utmMedium = urlParams.get("utm_medium") || "";
-      const utmCampaign = urlParams.get("utm_campaign") || "";
-
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = "YUBORILMOQDA...";
-      }
-
-      const now = new Date();
-      const timestamp = now.toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" });
-
-      await sendToGoogleSheets({
-        name: fullName,
-        phone: formattedPhone,
-        raw_phone: `${code}${digits}`,
-        timestamp: timestamp,
-        project: "Yangi Sho'rchi",
-        utm_source: utmSource,
-        utm_medium: utmMedium,
-        utm_campaign: utmCampaign,
-        page_url: window.location.href
-      });
-
-      window.location.href = "thankYou.html?from=root";
-    });
-  }
+    window.location.href = "thankYou.html?from=root";
+  });
 })();
