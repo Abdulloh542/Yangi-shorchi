@@ -1,16 +1,3 @@
-/**
- * YANGI SHO'RCHI — GOOGLE SHEETS AVTOMATIK QABUL QILISH SKRIPTI (ISM + TELEFON RAQAM)
- *
- * O'rnatish tartibi (1 daqiqa):
- * 1. https://sheets.new orqali yangi Google Sheets jadval oching.
- * 2. Yuqori menyudan: Extensions (Расширения / Kengaytmalar) -> Apps Script bo'limiga kiring.
- * 3. Ichidagi bor kodni o'chirib, ushbu kodni to'liq qo'ying va Save (Ctrl+S) bosing.
- * 4. O'ng yuqoridan: Deploy -> New deployment -> Select type (⚙️): Web app tanlang.
- * 5. "Execute as": Me | "Who has access": Anyone (Все / Hamma) tanlab, Deploy bosing va ruxsat bering.
- * 6. Chiqqan Web App URL ("https://script.google.com/macros/s/.../exec") manzilini nusxalab menga yuboring
- *    yoki `js/config.js` ichidagi `GOOGLE_SHEETS_WEB_APP_URL` qatoriga qo'ying!
- */
-
 const SHEET_NAME = "Lidlar";
 
 function doPost(e) {
@@ -25,17 +12,14 @@ function doPost(e) {
       sheet = ss.insertSheet(SHEET_NAME);
     }
 
-    // Agar jadval bo'sh bo'lsa, yashil sarlavha qatorini avtomatik yaratadi
     if (sheet.getLastRow() === 0) {
       const headers = [
-        "№",
+        "T/r",
         "Ism",
         "Telefon raqami",
         "Sana va vaqt",
         "Loyiha",
-        "Manba (UTM Source)",
-        "UTM Medium",
-        "UTM Campaign"
+        "Manba (UTM)"
       ];
       sheet.appendRow(headers);
       const headerRange = sheet.getRange(1, 1, 1, headers.length);
@@ -43,10 +27,10 @@ function doPost(e) {
       headerRange.setFontColor("#FFFFFF");
       headerRange.setFontWeight("bold");
       sheet.setFrozenRows(1);
-      sheet.setColumnWidth(1, 50);
+      sheet.setColumnWidth(1, 55);
       sheet.setColumnWidth(2, 180);
-      sheet.setColumnWidth(3, 170);
-      sheet.setColumnWidth(4, 160);
+      sheet.setColumnWidth(3, 175);
+      sheet.setColumnWidth(4, 165);
     }
 
     let params = {};
@@ -68,10 +52,8 @@ function doPost(e) {
       name,
       "'" + phone,
       tashkentTime,
-      params.project || "Yangi Sho'rchi",
-      params.utm_source || "direct",
-      params.utm_medium || "",
-      params.utm_campaign || ""
+      params.project || "Yangi Shorchi",
+      params.utm_source || "direct"
     ]);
 
     return ContentService
@@ -88,6 +70,6 @@ function doPost(e) {
 
 function doGet() {
   return ContentService
-    .createTextOutput("Yangi Sho'rchi Google Sheets webhook ishlab turibdi!")
+    .createTextOutput("Yangi Shorchi webhook OK")
     .setMimeType(ContentService.MimeType.TEXT);
 }
