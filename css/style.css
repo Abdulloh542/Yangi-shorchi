@@ -138,40 +138,18 @@ body {
 }
 
 /* ==========================================================================
-   HERO SECTION — MOBILE DEFAULT (< 920px) WITH REAL VERTICAL MASTERPLAN (IMAGE 6)
+   HERO SECTION — MOBILE (< 920px): PURE WHITE TOP + CRISP 16:9 BAND + SPEAKER
    ========================================================================== */
 .hero {
   position: relative;
-  padding: 80px 16px 18px;
+  padding: 78px 16px 18px;
   overflow: hidden;
-  background: #f5faf7;
+  background: var(--white);
 }
 
-/* Mobile Masterplan Background (Image 6) — positioned so full aerial complex is clearly visible */
+/* Desktop full-bleed background hidden on mobile so mobile uses uncropped 16:9 band */
 .hero__masterplan-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url('../assets/hero-mobile.jpg');
-  background-size: cover;
-  background-position: center 46%;
-  z-index: 1;
-}
-
-/* Gentle top readability veil for headline + clean white fade only at very bottom */
-.hero__masterplan-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.93) 0%,
-      rgba(255, 255, 255, 0.85) 23%,
-      rgba(255, 255, 255, 0.16) 40%,
-      rgba(255, 255, 255, 0.04) 70%,
-      rgba(255, 255, 255, 0.88) 89%,
-      #ffffff 100%
-    );
+  display: none;
 }
 
 .hero__container {
@@ -197,8 +175,7 @@ body {
   letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--text-main);
-  text-shadow: 0 2px 14px rgba(255, 255, 255, 0.95);
-  margin: 0 auto 6px;
+  margin: 0 auto 4px;
   max-width: 450px;
 }
 
@@ -206,23 +183,70 @@ body {
   color: #087a42;
 }
 
-/* Give breathing room above speaker so aerial buildings behind/around him shine clearly */
+/* Mobile Visual Stage matching user's exact 16:9 faded-edge composition */
 .hero__visual {
   position: relative;
-  margin-top: 64px;
+  margin-top: 4px;
+}
+
+.hero__scene {
+  position: relative;
+  margin: 0 -16px;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Full 16:9 horizontal masterplan band — zero side cropping, 100% crisp center, soft top/bottom white fade */
+.hero__mobile-bg-img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 108%;
+  max-width: 620px;
+  height: auto;
+  aspect-ratio: 16 / 9.6;
+  object-fit: cover;
+  object-position: center 46%;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.65) 11%,
+    #000000 22%,
+    #000000 78%,
+    rgba(0, 0, 0, 0.55) 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.65) 11%,
+    #000000 22%,
+    #000000 78%,
+    rgba(0, 0, 0, 0.55) 90%,
+    transparent 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
 }
 
 .hero__speaker-wrap {
+  position: relative;
+  z-index: 2;
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  padding-top: 26px;
 }
 
 .hero__speaker {
-  width: min(64%, 268px);
+  width: min(58%, 242px);
   height: auto;
   display: block;
-  filter: drop-shadow(0 14px 28px rgba(5, 32, 18, 0.34));
+  filter: drop-shadow(0 12px 24px rgba(5, 32, 18, 0.28));
   user-select: none;
   pointer-events: none;
 }
@@ -494,28 +518,43 @@ body {
 
   /* PC Wide Masterplan Background (Image 5) */
   .hero__masterplan-bg {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
     background-image: url('../assets/hero-pc.jpg');
     background-size: cover;
     background-position: 65% center;
   }
 
-  /* Left frosted readability zone while keeping right/center complex vividly clear */
   .hero__masterplan-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
     background:
       linear-gradient(
         90deg,
         rgba(255, 255, 255, 0.96) 0%,
-        rgba(255, 255, 255, 0.91) 34%,
-        rgba(255, 255, 255, 0.36) 54%,
-        rgba(255, 255, 255, 0.03) 76%
+        rgba(255, 255, 255, 0.90) 33%,
+        rgba(255, 255, 255, 0.30) 52%,
+        rgba(255, 255, 255, 0.02) 74%
       ),
       linear-gradient(
         180deg,
-        rgba(255, 255, 255, 0.45) 0%,
-        rgba(255, 255, 255, 0) 20%,
-        rgba(255, 255, 255, 0) 82%,
+        rgba(255, 255, 255, 0.40) 0%,
+        rgba(255, 255, 255, 0) 18%,
+        rgba(255, 255, 255, 0) 84%,
         #ffffff 100%
       );
+  }
+
+  .hero__mobile-bg-img {
+    display: none;
+  }
+
+  .hero__scene {
+    margin: 0;
+    padding-top: 0;
   }
 
   .hero__container {
@@ -608,6 +647,7 @@ body {
   }
 
   .hero__speaker-wrap {
+    padding-top: 0;
     align-items: flex-end;
   }
 
