@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link rel="stylesheet" href="css/style.css?v=5" />
 </head>
 <body>
   <!-- ==================== FIXED / STICKY TOP PILL HEADER ==================== -->
@@ -288,13 +288,7 @@
         <label for="phoneInput" class="field-label">Telefon raqamingiz</label>
 
         <div class="phone-group" id="phoneGroup">
-          <select id="countryCode" class="country-select" aria-label="Davlat kodi">
-            <option value="+998" selected>uz +998</option>
-            <option value="+7">ru +7</option>
-            <option value="+82">kr +82</option>
-            <option value="+996">kg +996</option>
-            <option value="+992">tj +992</option>
-          </select>
+          <span class="country-prefix" aria-hidden="true">+998</span>
 
           <input
             type="tel"
@@ -316,7 +310,7 @@
     </div>
   </div>
 
-  <script src="js/config.js?v=4"></script>
-  <script src="js/main.js?v=4" defer></script>
+  <script src="js/config.js?v=5"></script>
+  <script src="js/main.js?v=5" defer></script>
 </body>
 </html>

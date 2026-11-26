@@ -10,7 +10,6 @@ function doPost(e) {
     } catch (_) {}
   }
 
-  // Fast RAM deduplication (prevents duplicate rows if slow mobile retries)
   const cache = CacheService.getScriptCache();
   const leadId = (params.lead_id || "").trim();
   if (leadId && cache.get("lid_" + leadId)) {
@@ -36,14 +35,13 @@ function doPost(e) {
       sheet = ss.insertSheet(SHEET_NAME);
     }
 
-    if (!cache.get("headers_ready_v1") && sheet.getLastRow() === 0) {
+    if (!cache.get("headers_ready_v2") && sheet.getLastRow() === 0) {
       const headers = [
         "T/r",
         "Ism",
         "Telefon raqami",
         "Sana va vaqt",
-        "Loyiha",
-        "Manba (UTM)"
+        "Loyiha"
       ];
       sheet.appendRow(headers);
       const headerRange = sheet.getRange(1, 1, 1, headers.length);
@@ -52,10 +50,20 @@ function doPost(e) {
       headerRange.setFontWeight("bold");
       sheet.setFrozenRows(1);
       sheet.setColumnWidth(1, 55);
-      sheet.setColumnWidth(2, 180);
+      sheet.setColumnWidth(2, 185);
       sheet.setColumnWidth(3, 175);
       sheet.setColumnWidth(4, 165);
-      cache.put("headers_ready_v1", "1", 21600);
+      sheet.setColumnWidth(5, 145);
+      cache.put("headers_ready_v2", "1", 21600);
+    }
+
+    // Agar F ustunda eski "Manba (UTM)" sarlavhasi qolgan bo'lsa, avtomatik tozalab tashlaydi
+    if (!cache.get("cleaned_manba_v2")) {
+      const col6Header = String(sheet.getRange(1, 6).getValue() || "").trim();
+      if (col6Header.indexOf("Manba") !== -1) {
+        sheet.deleteColumn(6);
+      }
+      cache.put("cleaned_manba_v2", "1", 21600);
     }
 
     const tashkentTime = Utilities.formatDate(new Date(), "Asia/Tashkent", "dd.MM.yyyy HH:mm:ss");
@@ -67,8 +75,7 @@ function doPost(e) {
       name,
       "'" + phone,
       tashkentTime,
-      params.project || "Yangi Shorchi",
-      params.utm_source || "direct"
+      params.project || "Yangi Shorchi"
     ]);
 
     if (leadId) {
@@ -89,6 +96,6 @@ function doPost(e) {
 
 function doGet() {
   return ContentService
-    .createTextOutput("Yangi Shorchi high-load webhook OK")
+    .createTextOutput("Yangi Shorchi webhook OK")
     .setMimeType(ContentService.MimeType.TEXT);
 }

@@ -58,7 +58,6 @@
       removeFromOutbox(payload.lead_id);
       return true;
     } catch (_) {
-      // Fallback to navigator.sendBeacon if fetch failed under extreme network drop
       try {
         if (navigator.sendBeacon) {
           const blob = new Blob([encodedBody], {
@@ -74,13 +73,11 @@
     }
   }
 
-  // Background queue flusher (recovers any failed/offline submission on thankYou.html or revisit)
   async function flushOutboxWithJitter() {
     const queue = readOutbox();
     if (!queue.length) return;
     for (let i = 0; i < queue.length; i++) {
       const item = queue[i];
-      // Jittered delay smooths out 5,000+ concurrent user spikes
       const jitterMs = 350 + Math.floor(Math.random() * 1100);
       await new Promise((r) => setTimeout(r, jitterMs));
       await transmitPayload(item);
@@ -101,7 +98,6 @@
   const form = document.getElementById("leadForm");
   const nameInput = document.getElementById("nameInput");
   const nameGroup = document.getElementById("nameGroup");
-  const countrySelect = document.getElementById("countryCode");
   const phoneInput = document.getElementById("phoneInput");
   const phoneGroup = document.getElementById("phoneGroup");
   const errorBox = document.getElementById("formError");
@@ -113,7 +109,7 @@
     eventDateEl.textContent = cfg.EVENT_DATE_TEXT;
   }
 
-  // 1. Lightweight Countdown Timer (pauses work when tab hidden to save mobile battery/CPU)
+  // 1. Lightweight Countdown Timer
   if (countdownEls.length > 0) {
     let remaining = typeof cfg.COUNTDOWN_SECONDS === "number" ? cfg.COUNTDOWN_SECONDS : 117;
     const renderTimer = () => {
@@ -171,28 +167,24 @@
     }
   });
 
-  // 3. Input Validation & Phone Formatting
-  const COUNTRY_RULES = {
-    "+998": { len: 9, placeholder: "88 888 88 88", format: [2, 3, 2, 2] },
-    "+7": { len: 10, placeholder: "900 000 00 00", format: [3, 3, 2, 2] },
-    "+996": { len: 9, placeholder: "555 000 000", format: [3, 3, 3] },
-    "+992": { len: 9, placeholder: "90 000 00 00", format: [2, 3, 2, 2] },
-    "+82": { len: 10, placeholder: "10 0000 0000", format: [2, 4, 4] }
-  };
-
-  function getRule() {
-    const code = countrySelect ? countrySelect.value : "+998";
-    return COUNTRY_RULES[code] || COUNTRY_RULES["+998"];
+  // Tapping anywhere on +998 prefix focuses the phone input immediately
+  if (phoneGroup && phoneInput) {
+    phoneGroup.addEventListener("click", () => {
+      phoneInput.focus();
+    });
   }
 
-  function formatDigits(digits, groups) {
+  // 3. Uzbekistan +998 Phone Formatting (XX XXX XX XX)
+  const UZ_GROUPS = [2, 3, 2, 2];
+
+  function formatUzPhone(digits) {
     let res = "";
     let idx = 0;
-    for (let i = 0; i < groups.length; i++) {
+    for (let i = 0; i < UZ_GROUPS.length; i++) {
       if (idx >= digits.length) break;
-      const slice = digits.slice(idx, idx + groups[i]);
+      const slice = digits.slice(idx, idx + UZ_GROUPS[i]);
       res += (idx === 0 ? "" : " ") + slice;
-      idx += groups[i];
+      idx += UZ_GROUPS[i];
     }
     return res;
   }
@@ -215,29 +207,20 @@
     });
   }
 
-  if (countrySelect && phoneInput) {
-    countrySelect.addEventListener("change", () => {
-      const rule = getRule();
-      phoneInput.placeholder = rule.placeholder;
-      phoneInput.value = "";
-      clearError();
-      phoneInput.focus();
-    });
-
+  if (phoneInput) {
     phoneInput.addEventListener("input", () => {
       if (phoneGroup) phoneGroup.classList.remove("has-error");
       if (errorBox) errorBox.textContent = "";
-      const rule = getRule();
       let digits = phoneInput.value.replace(/\D/g, "");
-      if (countrySelect.value === "+998" && digits.length === 12 && digits.startsWith("998")) {
+      if (digits.length >= 12 && digits.startsWith("998")) {
         digits = digits.slice(3);
       }
-      digits = digits.slice(0, rule.len);
-      phoneInput.value = formatDigits(digits, rule.format);
+      digits = digits.slice(0, 9);
+      phoneInput.value = formatUzPhone(digits);
     });
   }
 
-  // 4. Instant Non-Blocking Lead Submission + Anti-Duplicate Guard
+  // 4. Instant Non-Blocking Lead Submission (Ism + +998 Raqam + Sana + Loyiha)
   let isSubmitting = false;
 
   form.addEventListener("submit", async (e) => {
@@ -252,19 +235,19 @@
       return;
     }
 
-    const code = countrySelect ? countrySelect.value : "+998";
-    const rule = getRule();
-    const digits = (phoneInput ? phoneInput.value : "").replace(/\D/g, "");
+    let digits = (phoneInput ? phoneInput.value : "").replace(/\D/g, "");
+    if (digits.length >= 12 && digits.startsWith("998")) {
+      digits = digits.slice(3);
+    }
 
-    if (digits.length < rule.len) {
+    if (digits.length < 9) {
       showError("Iltimos, telefon raqamingizni to‘liq kiriting!", phoneGroup);
       if (phoneInput) phoneInput.focus();
       return;
     }
 
-    const rawPhone = `${code}${digits}`;
+    const rawPhone = `+998${digits}`;
 
-    // Prevent accidental double-submission of identical phone within 25 seconds
     try {
       const last = JSON.parse(sessionStorage.getItem(LAST_SENT_KEY) || "null");
       if (last && last.raw_phone === rawPhone && Date.now() - last.ts < 25000) {
@@ -279,8 +262,7 @@
       submitBtn.textContent = "YUBORILMOQDA...";
     }
 
-    const formattedPhone = `${code} ${formatDigits(digits, rule.format)}`;
-    const urlParams = new URLSearchParams(window.location.search);
+    const formattedPhone = `+998 ${formatUzPhone(digits)}`;
     const leadId = `ys_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     const payload = {
@@ -289,13 +271,9 @@
       phone: formattedPhone,
       raw_phone: rawPhone,
       timestamp: new Date().toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" }),
-      project: "Yangi Shorchi",
-      utm_source: urlParams.get("utm_source") || "direct",
-      utm_medium: urlParams.get("utm_medium") || "",
-      utm_campaign: urlParams.get("utm_campaign") || ""
+      project: "Yangi Shorchi"
     };
 
-    // Enqueue before sending so zero leads are lost even if network drops mid-redirect
     const queue = readOutbox();
     queue.push(payload);
     writeOutbox(queue);
@@ -304,7 +282,6 @@
       sessionStorage.setItem(LAST_SENT_KEY, JSON.stringify({ raw_phone: rawPhone, ts: Date.now() }));
     } catch (_) {}
 
-    // Race transmission against snappy 900ms UI budget so button NEVER hangs under 5,000+ user load
     await Promise.race([
       transmitPayload(payload),
       new Promise((resolve) => setTimeout(resolve, 900))

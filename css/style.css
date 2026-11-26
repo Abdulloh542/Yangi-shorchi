@@ -867,20 +867,17 @@ body {
   box-shadow: 0 0 0 3px rgba(229, 37, 37, 0.14);
 }
 
-.country-select {
-  border: none;
-  background-color: transparent;
+.country-prefix {
   font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  color: #142219;
-  padding: 0 6px 0 2px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #101a14;
+  padding: 0 11px 0 2px;
   margin-right: 10px;
-  border-right: 1px solid #dce8e1;
-  height: 30px;
-  line-height: 30px;
-  cursor: pointer;
-  outline: none;
+  border-right: 1.5px solid #dce8e1;
+  height: 28px;
+  line-height: 28px;
+  user-select: none;
   flex-shrink: 0;
 }
 
