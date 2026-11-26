@@ -1,0 +1,718 @@
+/* ==========================================================================
+   YANGI SHO'RCHI — GREEN & WHITE CONSULTATION LANDING PAGE
+   Brand Palette: Deep Emerald (#064B2B), Vivid Emerald (#0B7E45), Crisp White (#FFFFFF)
+   ========================================================================== */
+
+:root {
+  --brand-dark: #064b2b;
+  --brand-primary: #0a6e3d;
+  --brand-vivid: #0e8a4d;
+  --brand-light: #eaf5ef;
+  --brand-surface: #f4faf6;
+  --brand-border: #d5e8dd;
+  --text-main: #101a14;
+  --text-muted: #4b5e53;
+  --white: #ffffff;
+  --danger: #e52525;
+  --shadow-soft: 0 10px 30px rgba(6, 75, 43, 0.08);
+  --shadow-card: 0 4px 16px rgba(6, 75, 43, 0.05);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(180deg, #eef6f1 0%, #e5f1ea 100%);
+  color: var(--text-main);
+  line-height: 1.45;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Mobile-first centered wrapper (matches shorchi-city.vercel.app mobile & desktop feel) */
+.page-shell {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--white);
+  min-height: 100vh;
+  box-shadow: 0 0 50px rgba(6, 75, 43, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   HERO SECTION
+   ========================================================================== */
+.hero {
+  position: relative;
+  padding: 16px 16px 10px;
+  background: linear-gradient(180deg, #e7f4ed 0%, #f7fbf9 34%, #ffffff 100%);
+  text-align: center;
+}
+
+/* Top Floating White Pill Header */
+.top-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid rgba(6, 75, 43, 0.1);
+  border-radius: 999px;
+  padding: 10px 18px;
+  box-shadow: 0 8px 24px rgba(6, 75, 43, 0.08);
+  margin-bottom: 20px;
+}
+
+.top-pill__logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+.top-pill__divider {
+  width: 1px;
+  height: 22px;
+  background: rgba(6, 75, 43, 0.14);
+  flex-shrink: 0;
+}
+
+.top-pill__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.top-pill__icon {
+  width: 18px;
+  height: 18px;
+  color: var(--brand-vivid);
+  flex-shrink: 0;
+}
+
+/* Condensed Impact Headline */
+.hero__title {
+  font-family: 'Oswald', Impact, 'Arial Narrow', sans-serif;
+  font-weight: 700;
+  font-size: clamp(23px, 6.2vw, 29px);
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--text-main);
+  margin: 0 auto 8px;
+  max-width: 440px;
+}
+
+.hero__title .accent {
+  color: var(--brand-vivid);
+}
+
+/* Visual Stage: Aerial Render + Speaker Cutout + Overlapping CTA */
+.hero-stage {
+  position: relative;
+  margin: 6px -16px 0;
+  padding-top: 8px;
+}
+
+.hero-stage__bg {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  height: 340px;
+  background-image: url('../assets/hero-bg.jpg');
+  background-size: cover;
+  background-position: center 38%;
+  z-index: 1;
+}
+
+/* Soft misty fade top & bottom so headline and CTA blend seamlessly like Reference 1 */
+.hero-stage__bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      #f8fcfa 0%,
+      rgba(248, 252, 250, 0.72) 14%,
+      rgba(255, 255, 255, 0.06) 38%,
+      rgba(255, 255, 255, 0.08) 68%,
+      rgba(255, 255, 255, 0.92) 90%,
+      #ffffff 100%
+    );
+}
+
+.hero-stage__speaker-wrap {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-top: 4px;
+}
+
+.hero-stage__speaker {
+  width: min(74%, 312px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 12px 24px rgba(6, 45, 25, 0.22));
+  user-select: none;
+  pointer-events: none;
+}
+
+/* CTA Wrapper overlapping bottom of speaker cutout */
+.cta-block {
+  position: relative;
+  z-index: 3;
+  padding: 0 16px;
+}
+
+.cta-block--hero {
+  margin-top: -34px;
+}
+
+/* Big 3D Glossy Green Capsule Button */
+.cta-btn {
+  position: relative;
+  width: 100%;
+  min-height: 76px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-size: clamp(20px, 5.3vw, 24px);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: linear-gradient(180deg, #17a85e 0%, #0c8246 54%, #076334 100%);
+  box-shadow:
+    0 6px 0 #044222,
+    0 16px 32px rgba(12, 130, 70, 0.36),
+    inset 0 2px 2px rgba(255, 255, 255, 0.42);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Subtle animated light sweep across button */
+.cta-btn::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 42%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(24deg);
+  animation: ctaShimmer 3.6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes ctaShimmer {
+  0% {
+    left: -60%;
+  }
+  42%,
+  100% {
+    left: 135%;
+  }
+}
+
+.cta-btn:hover {
+  filter: brightness(1.04);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #044222,
+    0 20px 36px rgba(12, 130, 70, 0.42),
+    inset 0 2px 2px rgba(255, 255, 255, 0.45);
+}
+
+.cta-btn:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 #044222,
+    0 10px 20px rgba(12, 130, 70, 0.3),
+    inset 0 2px 2px rgba(255, 255, 255, 0.35);
+}
+
+/* Urgency Note + Curved Arrow */
+.urgency-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 0 28px;
+}
+
+.urgency-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1f2d25;
+}
+
+.urgency-arrow {
+  position: absolute;
+  right: 10px;
+  top: -12px;
+  width: 42px;
+  height: 44px;
+  color: var(--brand-vivid);
+  pointer-events: none;
+}
+
+/* Countdown Timer */
+.countdown {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   FEATURES SECTION ("LOYIHA QULAYLIKLARI")
+   ========================================================================== */
+.features {
+  padding: 24px 16px 38px;
+  background: var(--white);
+}
+
+.section-title {
+  font-family: 'Oswald', Impact, sans-serif;
+  font-size: clamp(26px, 6.5vw, 31px);
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 0.02em;
+  color: var(--text-main);
+  margin-bottom: 20px;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.feature-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--white);
+  border: 1.5px solid var(--brand-border);
+  border-radius: 20px;
+  padding: 10px 16px 10px 10px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  border-color: #9fd1b6;
+  box-shadow: 0 10px 24px rgba(6, 75, 43, 0.09);
+}
+
+.feature-card__thumb {
+  width: 98px;
+  height: 98px;
+  border-radius: 15px;
+  overflow: hidden;
+  background: var(--brand-light);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.feature-card__body {
+  flex: 1;
+  font-size: 15.5px;
+  line-height: 1.38;
+  color: #1c2b22;
+  font-weight: 500;
+}
+
+.feature-card__body strong {
+  font-weight: 800;
+  color: #09150e;
+}
+
+.feature-card__body .green-tag {
+  color: var(--brand-primary);
+  font-weight: 800;
+}
+
+/* Footer Branding */
+.site-footer {
+  padding: 18px 16px 28px;
+  border-top: 1px solid #ebf3ee;
+  text-align: center;
+  background: #fafdfb;
+}
+
+.site-footer__logo {
+  height: 28px;
+  width: auto;
+  opacity: 0.88;
+  margin-bottom: 6px;
+}
+
+.site-footer__copy {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   MODAL ("Ro'yxatdan o'tish" — Matches Reference Image 5)
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(9, 25, 17, 0.56);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+}
+
+.modal-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: var(--white);
+  border-radius: 18px;
+  padding: 28px 24px 26px;
+  box-shadow: 0 24px 60px rgba(4, 38, 20, 0.28);
+  transform: translateY(16px) scale(0.97);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-backdrop.is-open .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  color: #36473d;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.modal-close:hover {
+  background: #eff6f2;
+  color: var(--brand-dark);
+}
+
+.modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  color: #101a14;
+  margin-bottom: 22px;
+}
+
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #24332a;
+  margin-bottom: 8px;
+}
+
+.phone-group {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #1b7f4b;
+  border-radius: 10px;
+  background: var(--white);
+  height: 52px;
+  padding: 0 12px;
+  transition: box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.phone-group:focus-within {
+  border-color: #086938;
+  box-shadow: 0 0 0 3.5px rgba(14, 138, 77, 0.16);
+}
+
+.phone-group.has-error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(229, 37, 37, 0.14);
+}
+
+.country-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23142219' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  color: #142219;
+  padding: 0 24px 0 2px;
+  margin-right: 10px;
+  border-right: 1px solid #dce8e1;
+  height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.phone-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 16.5px;
+  font-weight: 600;
+  color: #101a14;
+  letter-spacing: 0.02em;
+  width: 100%;
+}
+
+.phone-input::placeholder {
+  color: #9aa8a0;
+  font-weight: 500;
+}
+
+.form-error {
+  min-height: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--danger);
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #066e3a;
+  color: var(--white);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.submit-btn:hover {
+  background: #05592e;
+}
+
+.submit-btn:active {
+  transform: scale(0.99);
+}
+
+.submit-btn:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+/* ==========================================================================
+   THANK YOU PAGE ("OXIRGI QADAM QOLDI!" — Matches Reference Image 6 in Green/White)
+   ========================================================================== */
+.thankyou-body {
+  background: #f2f7f4;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.thankyou-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--white);
+  border: 1px solid var(--brand-border);
+  border-radius: 28px;
+  padding: 40px 24px 44px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(6, 75, 43, 0.09);
+}
+
+.thankyou-logo {
+  height: 36px;
+  width: auto;
+  margin-bottom: 24px;
+}
+
+.thankyou-title {
+  font-family: 'Oswald', Impact, sans-serif;
+  font-size: clamp(34px, 8vw, 44px);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  color: #0d1711;
+  line-height: 1.1;
+  margin-bottom: 18px;
+}
+
+.thankyou-subtitle {
+  font-size: clamp(17px, 4.4vw, 20px);
+  line-height: 1.45;
+  color: #1c2a22;
+  font-weight: 500;
+  max-width: 340px;
+  margin: 0 auto 24px;
+}
+
+.thankyou-subtitle .highlight-red {
+  color: #f01e1e;
+  font-weight: 700;
+}
+
+.down-arrow-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+  animation: arrowBounce 1.6s infinite ease-in-out;
+}
+
+@keyframes arrowBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(7px);
+  }
+}
+
+.telegram-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  min-height: 74px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-family: 'Oswald', Impact, sans-serif;
+  font-size: clamp(24px, 6vw, 30px);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: linear-gradient(180deg, #17a85e 0%, #0b7e44 58%, #065d31 100%);
+  box-shadow:
+    0 6px 0 #043e20,
+    0 16px 32px rgba(11, 126, 68, 0.34),
+    inset 0 2px 2px rgba(255, 255, 255, 0.38);
+  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+}
+
+.telegram-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-2px);
+}
+
+.telegram-btn:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 3px 0 #043e20,
+    0 10px 20px rgba(11, 126, 68, 0.28);
+}
+
+.telegram-btn svg {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 375px) {
+  .top-pill {
+    padding: 8px 12px;
+  }
+  .top-pill__logo {
+    height: 26px;
+  }
+  .top-pill__date {
+    font-size: 12.5px;
+  }
+  .feature-card__thumb {
+    width: 84px;
+    height: 84px;
+  }
+  .feature-card__body {
+    font-size: 14.5px;
+  }
+}
