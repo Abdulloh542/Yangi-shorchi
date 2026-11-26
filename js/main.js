@@ -11,7 +11,7 @@
   const phoneGroup = document.getElementById("phoneGroup");
   const errorBox = document.getElementById("formError");
   const submitBtn = document.getElementById("submitBtn");
-  const countdownEl = document.getElementById("countdownTimer");
+  const countdownEls = document.querySelectorAll("[data-countdown], #countdownTimer");
   const eventDateEl = document.getElementById("eventDateText");
 
   if (eventDateEl && cfg.EVENT_DATE_TEXT) {
@@ -19,12 +19,15 @@
   }
 
   // 1. Live Countdown Timer (MM:SS)
-  if (countdownEl) {
+  if (countdownEls.length > 0) {
     let remaining = typeof cfg.COUNTDOWN_SECONDS === "number" ? cfg.COUNTDOWN_SECONDS : 117;
     const renderTimer = () => {
       const mins = String(Math.floor(remaining / 60)).padStart(2, "0");
       const secs = String(remaining % 60).padStart(2, "0");
-      countdownEl.textContent = `${mins}:${secs}`;
+      const txt = `${mins}:${secs}`;
+      countdownEls.forEach((el) => {
+        el.textContent = txt;
+      });
     };
     renderTimer();
     setInterval(() => {
