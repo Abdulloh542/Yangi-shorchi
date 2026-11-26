@@ -131,9 +131,25 @@
 
   if (!form) return;
 
+  let isSubmitting = false;
+
+  // Reset button state when navigating back via iOS Safari / Telegram WebView bfcache
+  window.addEventListener("pageshow", () => {
+    isSubmitting = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "DAVOM ETISH";
+    }
+  });
+
   // 2. Modal Open / Close Controls
   function openModal() {
     if (!modal) return;
+    isSubmitting = false;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "DAVOM ETISH";
+    }
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
@@ -167,14 +183,13 @@
     }
   });
 
-  // Tapping anywhere on +998 prefix focuses the phone input immediately
   if (phoneGroup && phoneInput) {
     phoneGroup.addEventListener("click", () => {
       phoneInput.focus();
     });
   }
 
-  // 3. Uzbekistan +998 Phone Formatting (XX XXX XX XX)
+  // 3. Uzbekistan +998 Phone Formatting & Input Sanitization
   const UZ_GROUPS = [2, 3, 2, 2];
 
   function formatUzPhone(digits) {
@@ -187,6 +202,16 @@
       idx += UZ_GROUPS[i];
     }
     return res;
+  }
+
+  // Prevent spreadsheet formula injection (=, +, -, @) and strip control chars
+  function sanitizeName(raw) {
+    return String(raw || "")
+      .replace(/[\u0000-\u001F\u007F]/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/^[=+\-@]+/, "")
+      .trim()
+      .slice(0, 60);
   }
 
   function clearError() {
@@ -207,28 +232,30 @@
     });
   }
 
-  if (phoneInput) {
-    phoneInput.addEventListener("input", () => {
-      if (phoneGroup) phoneGroup.classList.remove("has-error");
-      if (errorBox) errorBox.textContent = "";
-      let digits = phoneInput.value.replace(/\D/g, "");
-      if (digits.length >= 12 && digits.startsWith("998")) {
-        digits = digits.slice(3);
-      }
-      digits = digits.slice(0, 9);
-      phoneInput.value = formatUzPhone(digits);
-    });
+  function normalizePhoneInput() {
+    if (!phoneInput) return;
+    if (phoneGroup) phoneGroup.classList.remove("has-error");
+    if (errorBox) errorBox.textContent = "";
+    let digits = phoneInput.value.replace(/\D/g, "");
+    if (digits.length >= 12 && digits.startsWith("998")) {
+      digits = digits.slice(3);
+    }
+    digits = digits.slice(0, 9);
+    phoneInput.value = formatUzPhone(digits);
   }
 
-  // 4. Instant Non-Blocking Lead Submission (Ism + +998 Raqam + Sana + Loyiha)
-  let isSubmitting = false;
+  if (phoneInput) {
+    phoneInput.addEventListener("input", normalizePhoneInput);
+    phoneInput.addEventListener("change", normalizePhoneInput);
+  }
 
+  // 4. Instant Non-Blocking Lead Submission
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
     clearError();
 
-    const fullName = (nameInput ? nameInput.value : "").trim();
+    const fullName = sanitizeName(nameInput ? nameInput.value : "");
     if (fullName.length < 2) {
       showError("Iltimos, ismingizni kiriting!", nameGroup);
       if (nameInput) nameInput.focus();
@@ -240,7 +267,7 @@
       digits = digits.slice(3);
     }
 
-    if (digits.length < 9) {
+    if (digits.length < 9 || /^0+$/.test(digits)) {
       showError("Iltimos, telefon raqamingizni to‘liq kiriting!", phoneGroup);
       if (phoneInput) phoneInput.focus();
       return;
