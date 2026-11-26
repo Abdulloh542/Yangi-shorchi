@@ -1,26 +1,16 @@
-# Google Sheets ulash bo‘yicha 2 daqiqalik qo‘llanma
+# Google Sheets ulash bo‘yicha 1 daqiqalik qo‘llanma (Ism + Telefon raqam)
 
-Saytdan qoldirilgan barcha telefon raqamlar to‘g‘ridan-to‘g‘ri **Google Sheets** jadvalingizga tushishi uchun quyidagi 4 qadamni bajaring:
+Saytdan qoldirilgan **Ism** va **Telefon raqamlar** to‘g‘ridan-to‘g‘ri **Google Sheets** jadvalingizga tushishi uchun:
 
-1. **Google Sheets**'da yangi jadval yarating.
-2. Yuqori menyudan **`Extensions` (Расширения / Kengaytmalar) → `Apps Script`** bo‘limiga o‘ting.
-3. Ochilgan oynadagi kodni o‘chirib, loyiha ichidagi [`google-sheets-script.gs`](./google-sheets-script.gs) faylidagi kodni to‘liq nusxalab qo‘ying va **Save (`Ctrl + S`)** tugmasini bosing.
+1. https://sheets.new havolasini ochib yangi jadval yarating (nomini masalan `Yangi Shorchi Lidlar` deb qo‘ying).
+2. Yuqori menyudan **`Extensions` (Расширения / Kengaytmalar) → `Apps Script`** bo‘limiga kiring.
+3. Ochilgan oynadagi `function myFunction() {}` kodini o‘chirib, [`google-sheets-script.gs`](./google-sheets-script.gs) faylidagi kodni joylang va **Save (`Ctrl + S`)** bosing.
 4. O‘ng yuqoridagi ko‘k **`Deploy` → `New deployment`** tugmasini bosing:
-   - **Select type** (tishli g‘ildirakcha): **`Web app`**
+   - Chapdagi tishli g‘ildirakcha (`Select type` ⚙️) → **`Web app`** tanlang.
    - **Execute as**: **`Me`**
-   - **Who has access**: **`Anyone`** *(bu juda muhim!)*
-   - **`Deploy`** tugmasini bosing va ruxsat bering (`Authorize access`).
-5. Sizga berilgan **`Web app URL`** (`https://script.google.com/macros/s/.../exec`) manzilini nusxalab oling va [`js/config.js`](./js/config.js) faylidagi `GOOGLE_SHEETS_WEB_APP_URL` ichiga qo‘ying:
+   - **Who has access**: **`Anyone`** *(Все / Hamma — bu juda muhim!)*
+   - **`Deploy`** bosing → `Authorize access` → Google akkauntingizni tanlang → `Advanced` → `Go to Untitled project (unsafe)` → `Allow` bosing.
+5. Chiqqan **`Web app URL`** (`https://script.google.com/macros/s/.../exec`) linkini nusxalab chatga tashlang (yoki [`js/config.js`](./js/config.js) faylidagi `GOOGLE_SHEETS_WEB_APP_URL` ichiga qo‘ying).
 
-```js
-window.YANGI_SHORCHI_CONFIG = {
-  GOOGLE_SHEETS_WEB_APP_URL: "https://script.google.com/macros/s/SIZNING_KODINGIZ/exec",
-  TELEGRAM_CHANNEL_URL: "https://t.me/oscar_building",
-  EVENT_DATE_TEXT: "5-dekabr | 20:00 da",
-  COUNTDOWN_SECONDS: 117
-};
-```
-
-Shu zahoti saytdagi `DAVOM ETISH` tugmasi bosilganda:
-1. Telefon raqam, Toshkent vaqti va reklama manbasi (`utm_source`) Google Sheets'dagi **`Lidlar`** varag‘iga yoziladi.
-2. Mijoz darhol **`thankYou.html`** (`OXIRGI QADAM QOLDI!`) sahifasiga o‘tadi va **`OBUNA BO‘LISH`** tugmasi orqali `https://t.me/oscar_building` Telegram kanaliga ulanadi.
+Jadvalda avtomatik tarzda yashil sarlavhali **`Lidlar`** varag‘i ochiladi va har bir mijoz quyidagi ustunlarda tushadi:
+`№` | **`Ism`** | **`Telefon raqami`** | `Sana va vaqt` | `Loyiha` | `Manba (UTM)`

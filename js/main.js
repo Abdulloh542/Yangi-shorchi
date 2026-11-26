@@ -6,6 +6,8 @@
   const openBtns = document.querySelectorAll("[data-open-modal]");
   const closeBtn = document.getElementById("closeModalBtn");
   const form = document.getElementById("leadForm");
+  const nameInput = document.getElementById("nameInput");
+  const nameGroup = document.getElementById("nameGroup");
   const countrySelect = document.getElementById("countryCode");
   const phoneInput = document.getElementById("phoneInput");
   const phoneGroup = document.getElementById("phoneGroup");
@@ -45,7 +47,11 @@
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
     setTimeout(() => {
-      if (phoneInput) phoneInput.focus();
+      if (nameInput && !nameInput.value.trim()) {
+        nameInput.focus();
+      } else if (phoneInput) {
+        phoneInput.focus();
+      }
     }, 120);
   }
 
@@ -70,7 +76,7 @@
     }
   });
 
-  // 3. Phone Formatting & Country Rules
+  // 3. Input Validation & Phone Formatting
   const COUNTRY_RULES = {
     "+998": { len: 9, placeholder: "88 888 88 88", format: [2, 3, 2, 2] },
     "+7": { len: 10, placeholder: "900 000 00 00", format: [3, 3, 2, 2] },
@@ -98,12 +104,20 @@
 
   function clearError() {
     if (errorBox) errorBox.textContent = "";
+    if (nameGroup) nameGroup.classList.remove("has-error");
     if (phoneGroup) phoneGroup.classList.remove("has-error");
   }
 
-  function showError(msg) {
+  function showError(msg, targetGroup) {
     if (errorBox) errorBox.textContent = msg;
-    if (phoneGroup) phoneGroup.classList.add("has-error");
+    if (targetGroup) targetGroup.classList.add("has-error");
+  }
+
+  if (nameInput) {
+    nameInput.addEventListener("input", () => {
+      if (nameGroup) nameGroup.classList.remove("has-error");
+      if (errorBox) errorBox.textContent = "";
+    });
   }
 
   if (countrySelect && phoneInput) {
@@ -116,10 +130,10 @@
     });
 
     phoneInput.addEventListener("input", () => {
-      clearError();
+      if (phoneGroup) phoneGroup.classList.remove("has-error");
+      if (errorBox) errorBox.textContent = "";
       const rule = getRule();
       let digits = phoneInput.value.replace(/\D/g, "");
-      // Strip accidental country code paste (e.g. 998901234567)
       if (countrySelect.value === "+998" && digits.length === 12 && digits.startsWith("998")) {
         digits = digits.slice(3);
       }
@@ -128,11 +142,11 @@
     });
   }
 
-  // 4. Submit Phone Number -> Google Sheets -> Redirect to thankYou.html
+  // 4. Submit Name + Phone -> Google Sheets -> Redirect to thankYou.html
   async function sendToGoogleSheets(payload) {
     const endpoint = (cfg.GOOGLE_SHEETS_WEB_APP_URL || "").trim();
 
-    // Backup locally so no lead is lost during testing
+    // Backup locally
     try {
       const saved = JSON.parse(localStorage.getItem("yangi_shorchi_leads") || "[]");
       saved.push(payload);
@@ -146,19 +160,23 @@
     const bodyParams = new URLSearchParams();
     Object.entries(payload).forEach(([k, v]) => bodyParams.append(k, String(v ?? "")));
 
-    try {
-      await fetch(endpoint, {
-        method: "POST",
-        mode: "no-cors",
-        keepalive: true,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-        },
-        body: bodyParams.toString()
-      });
-    } catch (err) {
+    const fetchPromise = fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors",
+      keepalive: true,
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+      },
+      body: bodyParams.toString()
+    }).catch((err) => {
       console.warn("Google Sheets yuborishda ogohlantirish:", err);
-    }
+    });
+
+    // Wait up to 2.5s for Google Sheets response; keepalive ensures completion even if slow
+    await Promise.race([
+      fetchPromise,
+      new Promise((resolve) => setTimeout(resolve, 2500))
+    ]);
   }
 
   if (form) {
@@ -166,12 +184,19 @@
       e.preventDefault();
       clearError();
 
+      const fullName = (nameInput ? nameInput.value : "").trim();
+      if (fullName.length < 2) {
+        showError("Iltimos, ismingizni kiriting!", nameGroup);
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
       const code = countrySelect ? countrySelect.value : "+998";
       const rule = getRule();
       const digits = (phoneInput ? phoneInput.value : "").replace(/\D/g, "");
 
       if (digits.length < rule.len) {
-        showError("Iltimos, telefon raqamingizni to‘liq kiriting!");
+        showError("Iltimos, telefon raqamingizni to‘liq kiriting!", phoneGroup);
         if (phoneInput) phoneInput.focus();
         return;
       }
@@ -191,6 +216,7 @@
       const timestamp = now.toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" });
 
       await sendToGoogleSheets({
+        name: fullName,
         phone: formattedPhone,
         raw_phone: `${code}${digits}`,
         timestamp: timestamp,
